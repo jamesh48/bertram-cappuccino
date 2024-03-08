@@ -1,6 +1,5 @@
 import { dynamoClient, router } from '@/api-libs';
 import {
-  AttributeValue,
   QueryCommand,
   QueryCommandInput,
   UpdateItemCommand,
@@ -12,6 +11,7 @@ interface CoffeeDrinker {
   lastBought: string;
   favoriteDrink: string;
   favoriteDrinkPrice: number;
+  totalExpense: number;
 }
 
 const fetchTodaysCoffeeDrinkers = async (coffeeDrinkerNames: string[]) => {
@@ -58,7 +58,7 @@ const calculateDifferentialDate = (numberOfCoffeeDrinkers: number) => {
 
 const calculateTodaysTotalExpense = (coffeeDrinkers: CoffeeDrinker[]) => {
   return coffeeDrinkers.reduce((total, item) => {
-    total = total + item.favoriteDrinkPrice;
+    total = total + Number(item.favoriteDrinkPrice);
     return total;
   }, 0);
 };
@@ -83,11 +83,34 @@ const incrementTodaysBuyer = async (
   return 'ok';
 };
 
+const fromMultipleChooseUnique = (
+  queriedCoffeeDrinkers: Pick<
+    CoffeeDrinker,
+    'totalExpense' | 'coffeeDrinkerName' | 'lastBought'
+  >[]
+) => {
+  if (queriedCoffeeDrinkers.length === 1) {
+    return queriedCoffeeDrinkers[0].coffeeDrinkerName;
+  }
+  // Choose the person with the least expense, start from 0
+  let max = Number(queriedCoffeeDrinkers[0].totalExpense);
+  let chosenOne = queriedCoffeeDrinkers[0].coffeeDrinkerName;
+  for (let i = 1; i < queriedCoffeeDrinkers.length; i++) {
+    const currentExpense = Number(queriedCoffeeDrinkers[i].totalExpense);
+
+    if (currentExpense < max) {
+      chosenOne = queriedCoffeeDrinkers[i].coffeeDrinkerName;
+      max = currentExpense;
+    }
+  }
+  console.log('CHOSEN ONE: ', chosenOne);
+  return chosenOne;
+};
+
 const calculateTodaysBuyer = router
   .clone()
-  .post(async (_req, res) => {
-    // const coffeeDrinkerNames = req.body.coffeeDrinkers;
-    const coffeeDrinkerNames = ['Hans', 'Jambob', 'James'];
+  .post(async (req, res) => {
+    const coffeeDrinkerNames = req.body.coffeeDrinkers;
     const [startDate, endDate] = calculateDifferentialDate(
       coffeeDrinkerNames.length
     );
@@ -113,17 +136,22 @@ const calculateTodaysBuyer = router
     });
 
     const queriedCoffeeDrinkers = (await Promise.all(firstQueries)).reduce<
-      string[]
+      Pick<CoffeeDrinker, 'totalExpense' | 'coffeeDrinkerName' | 'lastBought'>[]
     >((total, output) => {
       if (output.Count && output.Items?.length) {
-        total.push(output.Items[0]!.coffeeDrinkerName.S!);
+        total.push({
+          coffeeDrinkerName: output.Items[0]!.coffeeDrinkerName.S!,
+          totalExpense: output.Items[0]!.totalExpense.N!,
+          lastBought: output.Items[0]!.lastBought.S!,
+        });
       }
       return total;
     }, []);
 
+    console.log(queriedCoffeeDrinkers.map((x) => x.coffeeDrinkerName));
     if (queriedCoffeeDrinkers.length) {
       // Determine who is paying from the group.
-      const todaysBuyer = '';
+      const todaysBuyer = fromMultipleChooseUnique(queriedCoffeeDrinkers);
       // Fetch Todays Cofee Drinkers
       const todaysCoffeeDrinkers = await fetchTodaysCoffeeDrinkers(
         coffeeDrinkerNames
@@ -140,7 +168,7 @@ const calculateTodaysBuyer = router
       coffeeDrinkerNames
     );
     // Determine who is paying from the Group
-    const todaysBuyer = '';
+    const todaysBuyer = fromMultipleChooseUnique(todaysCoffeeDrinkers);
     // Determine the total expense of everyones drink
     const todaysTotalExpense =
       calculateTodaysTotalExpense(todaysCoffeeDrinkers);

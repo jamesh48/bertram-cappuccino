@@ -10,6 +10,7 @@ const fetchCoffeeDrinkers = router
     };
     const scanCommand = new ScanCommand(scanCommandInput);
     const data = await dynamoClient.send(scanCommand);
+
     return res.send(data.Items?.map((item) => unmarshall(item)));
   })
   .handler();
