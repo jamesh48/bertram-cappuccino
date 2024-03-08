@@ -174,7 +174,12 @@ const calculateTodaysBuyer = router
       calculateTodaysTotalExpense(todaysCoffeeDrinkers);
     // DB Call - Update Todays Payer with todaysTotalExpense
     await incrementTodaysBuyer(todaysBuyer, todaysTotalExpense);
-    return res.send(todaysCoffeeDrinkers);
+    return res.send({
+      result: {
+        todaysBuyer,
+        todaysTotalExpense,
+      },
+    });
   })
   .handler();
 

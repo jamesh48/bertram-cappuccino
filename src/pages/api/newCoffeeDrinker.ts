@@ -7,7 +7,6 @@ const newCoffeeDrinker = router
     const coffeeDrinkerName = req.body.coffeeDrinkerName;
     const favoriteDrink = req.body.favoriteDrink;
     const favoriteDrinkPrice = req.body.favoriteDrinkPrice;
-    console.log(req.body);
     const lastBought = new Date().toISOString().split('T')[0];
     const totalExpense = 0;
 

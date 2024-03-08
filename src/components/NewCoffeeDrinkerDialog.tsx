@@ -7,10 +7,15 @@ import {
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { Formik, Form } from 'formik';
+import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query';
+import { CoffeeDrinker } from './Home';
 
 interface NewCoffeeDrinkerDialogProps {
   newCoffeeDrinkerOpen: boolean;
   handleNewCoffeeDrinkerOpen: (flag: boolean) => void;
+  refetch: (
+    options?: RefetchOptions | undefined
+  ) => Promise<QueryObserverResult<CoffeeDrinker[], Error>>;
 }
 
 const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
@@ -22,6 +27,11 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
       },
       body: JSON.stringify(values),
     });
+    // Invalidate Cache
+    await props.refetch();
+
+    // Close Dialog
+    props.handleNewCoffeeDrinkerOpen(false);
   };
 
   return (
@@ -32,6 +42,7 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
             borderBottom: '1px solid black',
             display: 'flex',
             justifyContent: 'flex-end',
+            padding: '.25rem .5rem',
           }}
         >
           <Close
@@ -63,7 +74,7 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  padding: '1rem',
+                  padding: '.5rem',
                 }}
               >
                 <Box
