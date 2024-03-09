@@ -4,11 +4,16 @@ import {
   Typography,
   OutlinedInput,
   CircularProgress,
+  Button,
+  Paper,
+  PaperProps,
+  DialogTitle,
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { Formik, Form } from 'formik';
 import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query';
 import { CoffeeDrinker } from './Home';
+import Draggable from 'react-draggable';
 
 interface NewCoffeeDrinkerDialogProps {
   newCoffeeDrinkerOpen: boolean;
@@ -16,6 +21,17 @@ interface NewCoffeeDrinkerDialogProps {
   refetch: (
     options?: RefetchOptions | undefined
   ) => Promise<QueryObserverResult<CoffeeDrinker[], Error>>;
+}
+
+function PaperComponent(props: PaperProps) {
+  return (
+    <Draggable
+      handle="#draggable-dialog-title"
+      cancel={'[class*="MuiDialogContent-root"]'}
+    >
+      <Paper {...props} />
+    </Draggable>
+  );
 }
 
 const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
@@ -35,7 +51,7 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
   };
 
   return (
-    <Dialog open={props.newCoffeeDrinkerOpen}>
+    <Dialog open={props.newCoffeeDrinkerOpen} PaperComponent={PaperComponent}>
       <Box>
         <Box
           sx={{
@@ -60,7 +76,12 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
             padding: '1rem',
           }}
         >
-          <Typography variant="h5">New Coffee Drinker</Typography>
+          <DialogTitle
+            style={{ cursor: 'move', padding: 0 }}
+            id="draggable-dialog-title"
+          >
+            New Coffee Drinker
+          </DialogTitle>
           <Formik
             onSubmit={handleSubmit}
             initialValues={{
@@ -68,8 +89,38 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
               favoriteDrink: '',
               favoriteDrinkPrice: 0,
             }}
+            validate={async (values) => {
+              const errors = {} as {
+                coffeeDrinkerName: string;
+                favoriteDrink: string;
+                favoriteDrinkPrice: string;
+              };
+
+              if (!values.favoriteDrink.length) {
+                errors.favoriteDrink = 'Required';
+              }
+
+              if (!values.coffeeDrinkerName.length) {
+                errors.coffeeDrinkerName = 'Required';
+              }
+
+              if (
+                isNaN(values.favoriteDrinkPrice) ||
+                values.favoriteDrinkPrice.toString().endsWith('.')
+              ) {
+                errors.favoriteDrinkPrice = 'Invalid Drink Price!';
+              } else if (!values.favoriteDrinkPrice) {
+                errors.favoriteDrinkPrice = 'Required';
+              }
+
+              if (Object.keys(errors).length) {
+                return errors;
+              }
+
+              return {};
+            }}
           >
-            {({ values, handleChange, isSubmitting }) => (
+            {({ values, handleChange, isSubmitting, errors }) => (
               <Form
                 style={{
                   display: 'flex',
@@ -90,47 +141,71 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
                     name="coffeeDrinkerName"
                     value={values.coffeeDrinkerName}
                   />
+                  {errors.coffeeDrinkerName ? (
+                    <Typography sx={{ color: 'red' }}>
+                      {errors.coffeeDrinkerName}
+                    </Typography>
+                  ) : null}
                 </Box>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    paddingY: '.5rem',
-                  }}
-                >
-                  <label>Favorite Drink</label>
-                  <OutlinedInput
-                    onChange={handleChange}
-                    name="favoriteDrink"
-                    value={values.favoriteDrink}
-                  />
-                </Box>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    paddingY: '.5rem',
-                  }}
-                >
-                  <label>Favorite Drink Price</label>
-                  <OutlinedInput
-                    onChange={handleChange}
-                    name="favoriteDrinkPrice"
-                    value={values.favoriteDrinkPrice}
-                  />
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                  {isSubmitting ? (
-                    <CircularProgress />
-                  ) : (
+                {values.coffeeDrinkerName && !errors.coffeeDrinkerName ? (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      paddingY: '.5rem',
+                    }}
+                  >
+                    <label>Favorite Drink</label>
                     <OutlinedInput
-                      fullWidth
-                      type="submit"
-                      value="Save Coffee Drinker"
-                      inputProps={{ sx: { cursor: 'pointer' } }}
+                      onChange={handleChange}
+                      name="favoriteDrink"
+                      value={values.favoriteDrink}
                     />
-                  )}
-                </Box>
+                    {errors.favoriteDrink ? (
+                      <Typography sx={{ color: 'red' }}>
+                        {errors.favoriteDrink}
+                      </Typography>
+                    ) : null}
+                  </Box>
+                ) : null}
+                {values.favoriteDrink && !errors.favoriteDrink ? (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      paddingY: '.5rem',
+                    }}
+                  >
+                    <label>Favorite Drink Price</label>
+                    <OutlinedInput
+                      onChange={handleChange}
+                      name="favoriteDrinkPrice"
+                      value={values.favoriteDrinkPrice}
+                    />
+                    {errors.favoriteDrinkPrice ? (
+                      <Typography sx={{ color: 'red' }}>
+                        {errors.favoriteDrinkPrice}
+                      </Typography>
+                    ) : null}
+                  </Box>
+                ) : null}
+
+                {values.favoriteDrinkPrice && !errors.favoriteDrinkPrice ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                    {isSubmitting ? (
+                      <CircularProgress />
+                    ) : (
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        type="submit"
+                      >
+                        Save Coffee Drinker
+                      </Button>
+                    )}
+                  </Box>
+                ) : null}
               </Form>
             )}
           </Formik>

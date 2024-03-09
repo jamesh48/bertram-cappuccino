@@ -7,8 +7,8 @@ import {
   FormControlLabel,
   Checkbox,
   Button,
-  OutlinedInput,
   CircularProgress,
+  Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import NewCoffeeDrinkerDialog from './NewCoffeeDrinkerDialog';
@@ -40,10 +40,12 @@ export default function Home() {
     todaysTotalExpense: number;
     open: boolean;
   }>({ open: false, todaysTotalExpense: 0, todaysBuyer: '' });
-  const { data, refetch } = useQuery<CoffeeDrinker[]>({
-    queryKey: ['coffeeDrinkers'],
-    queryFn: getCoffeeDrinkers,
-  });
+  const { data, refetch, isRefetching, isFetching } = useQuery<CoffeeDrinker[]>(
+    {
+      queryKey: ['coffeeDrinkers'],
+      queryFn: getCoffeeDrinkers,
+    }
+  );
 
   useEffect(() => {
     if (data && data.length) {
@@ -151,49 +153,64 @@ export default function Home() {
             width: '100%',
           }}
         >
-          {checkboxes.map((checkbox, index) => {
-            return (
-              <Box
-                key={index}
-                sx={{
-                  height: 'auto',
-                  borderBottom: '1px solid black',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  width: '100%',
-                }}
-              >
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={checkbox.checked}
-                      onChange={handleChange}
-                      name={checkbox.coffeeDrinkerName}
-                    />
-                  }
-                  label={`${checkbox.coffeeDrinkerName} | ${checkbox.favoriteDrink} | $${checkbox.favoriteDrinkPrice}`}
-                />
-              </Box>
-            );
-          })}
+          {isFetching || isRefetching ? (
+            <Box
+              sx={{
+                height: 'auto',
+                borderBottom: '1px solid black',
+                display: 'flex',
+                width: '100%',
+                paddingY: '.5rem',
+                justifyContent: 'center',
+              }}
+            >
+              <Typography variant="h6">Getting Coffee Drinkers...</Typography>
+            </Box>
+          ) : (
+            checkboxes.map((checkbox, index) => {
+              return (
+                <Box
+                  key={index}
+                  sx={{
+                    height: 'auto',
+                    borderBottom: '1px solid black',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    width: '100%',
+                  }}
+                >
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={checkbox.checked}
+                        onChange={handleChange}
+                        name={checkbox.coffeeDrinkerName}
+                      />
+                    }
+                    label={`${checkbox.coffeeDrinkerName} | ${checkbox.favoriteDrink} | $${checkbox.favoriteDrinkPrice}`}
+                  />
+                </Box>
+              );
+            })
+          )}
         </FormGroup>
       </FormControl>
-      <OutlinedInput
+      <Button
         onClick={() => {
           handleNewCoffeeDrinkerOpen(true);
         }}
-        type="button"
-        value="New Coffee Drinker"
-        inputProps={{ sx: { cursor: 'pointer' } }}
+        variant="outlined"
+        color="primary"
+        disabled={isFetching || isRefetching}
         sx={{ marginY: '1rem' }}
-      />
-
+      >
+        New Coffee Drinker
+      </Button>
       <NewCoffeeDrinkerDialog
         newCoffeeDrinkerOpen={newCoffeeDrinkerOpen}
         handleNewCoffeeDrinkerOpen={handleNewCoffeeDrinkerOpen}
         refetch={refetch}
       />
-
       <TodaysResultDialog
         handleTodaysResultDialogOpen={handleTodaysResultDialogOpen}
         todaysResult={todaysResult}
