@@ -97,7 +97,7 @@ export class BCPStack extends Construct {
         vpcId: props.aws_env.AWS_VPC_ID,
       }),
       healthCheck: {
-        path: '/',
+        path: '/api/healthcheck',
         unhealthyThresholdCount: 2,
         healthyHttpCodes: '200',
         healthyThresholdCount: 5,
@@ -110,7 +110,12 @@ export class BCPStack extends Construct {
     importedALBListener.addTargetGroups('bcp-listener-tg', {
       targetGroups: [targetGroup],
       priority: 65,
-      conditions: [elbv2.ListenerCondition.pathPatterns(['/*'])],
+      conditions: [
+        elbv2.ListenerCondition.hostHeaders([
+          'www.bertramcappuccino.com',
+          'bertramcappuccino.com',
+        ]),
+      ],
     });
   }
 }
