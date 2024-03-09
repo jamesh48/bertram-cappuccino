@@ -4,6 +4,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 
 interface BCPStackProps extends cdk.StackProps {
@@ -19,6 +20,15 @@ interface BCPStackProps extends cdk.StackProps {
 export class BCPStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BCPStackProps) {
     super(scope, id, props);
+
+    new dynamodb.Table(this, 'betram-cappuccino-members-table', {
+      tableName: 'betram_cappuccino_members_table',
+      partitionKey: {
+        name: 'coffeeDrinkerName',
+        type: dynamodb.AttributeType.STRING,
+      },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+    });
 
     const bcpFargateService = new ecs.FargateService(this, 'bcp-service', {
       assignPublicIp: true,
