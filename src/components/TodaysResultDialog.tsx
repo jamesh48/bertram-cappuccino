@@ -1,4 +1,4 @@
-import { Dialog, Box, OutlinedInput, Typography } from '@mui/material';
+import { Dialog, Box, Typography, Button } from '@mui/material';
 
 interface TodaysResultDialogProps {
   todaysResult: {
@@ -11,7 +11,14 @@ interface TodaysResultDialogProps {
 
 const TodaysResultDialog = (props: TodaysResultDialogProps) => {
   return (
-    <Dialog open={props.todaysResult.open}>
+    <Dialog
+      open={props.todaysResult.open}
+      sx={{
+        '& .MuiDialog-container': {
+          alignItems: 'flex-start',
+        },
+      }}
+    >
       <Box sx={{ display: 'flex', flexDirection: 'column', padding: '2rem' }}>
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
           <Typography variant="h5" sx={{ textDecoration: 'underline' }}>
@@ -22,7 +29,7 @@ const TodaysResultDialog = (props: TodaysResultDialogProps) => {
           sx={{
             display: 'flex',
             justifyContent: 'center',
-            paddingY: '1rem',
+            paddingY: '.75rem',
             flexDirection: 'column',
             alignItems: 'center',
           }}
@@ -32,12 +39,13 @@ const TodaysResultDialog = (props: TodaysResultDialogProps) => {
             Total Expense: ${props.todaysResult.todaysTotalExpense}
           </Typography>
         </Box>
-        <OutlinedInput
-          type="button"
-          value="Ok"
-          inputProps={{ sx: { cursor: 'pointer' } }}
+        <Button
+          variant="contained"
+          color="primary"
           onClick={props.handleTodaysResultDialogOpen}
-        />
+        >
+          Ok
+        </Button>
       </Box>
     </Dialog>
   );

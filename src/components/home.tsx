@@ -125,6 +125,7 @@ export default function Home() {
         border: '1px solid black',
         padding: '1rem',
         width: '20rem',
+        borderRadius: '1.5%',
       }}
     >
       <FormControl component="fieldset" variant="standard">
@@ -200,7 +201,7 @@ export default function Home() {
           handleNewCoffeeDrinkerOpen(true);
         }}
         variant="outlined"
-        color="primary"
+        color="secondary"
         disabled={isFetching || isRefetching}
         sx={{ marginY: '1rem' }}
       >

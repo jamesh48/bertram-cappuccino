@@ -51,7 +51,15 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
   };
 
   return (
-    <Dialog open={props.newCoffeeDrinkerOpen} PaperComponent={PaperComponent}>
+    <Dialog
+      open={props.newCoffeeDrinkerOpen}
+      PaperComponent={PaperComponent}
+      sx={{
+        '& .MuiDialog-container': {
+          alignItems: 'flex-start',
+        },
+      }}
+    >
       <Box>
         <Box
           sx={{
