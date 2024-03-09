@@ -1,3 +1,5 @@
+# Betram Cappuccino
+
 ## Tech Stack
 
 - The frontend and server-side of this project is facilitated by [Next.js](https://nextjs.org/), which is a react framework that simplifies and abstracts complex operations like server side rendering, build optimization, and app routing. The code is written 100% in Typescript. There are no environment variables associated with the service.
