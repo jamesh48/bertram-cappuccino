@@ -24,7 +24,7 @@ FROM node:lts-alpine AS runner
 ARG X_TAG
 WORKDIR /opt/bcp-app
 ENV NODE_ENV=production
-COPY --from=builder /opt/bcp-app/next.config.js ./
+COPY --from=builder /opt/bcp-app/next.config.mjs ./
 COPY --from=builder /opt/bcp-app/public ./public
 COPY --from=builder /opt/bcp-app/.next ./.next
 COPY --from=builder /opt/bcp-app/package*.json ./

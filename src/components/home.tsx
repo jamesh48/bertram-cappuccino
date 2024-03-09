@@ -16,7 +16,7 @@ import TodaysResultDialog from './TodaysResultDialog';
 import { useQuery } from '@tanstack/react-query';
 
 const getCoffeeDrinkers = async () => {
-  const r = await fetch('http://localhost:3000/api/fetchCoffeeDrinkers', {
+  const r = await fetch('/api/fetchCoffeeDrinkers', {
     cache: 'no-store',
   });
   return r.json();

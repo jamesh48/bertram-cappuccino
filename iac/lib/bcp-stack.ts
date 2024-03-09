@@ -16,11 +16,11 @@ interface BCPStackProps extends cdk.StackProps {
   svc_env: {};
 }
 
-export class BCPStack extends Construct {
+export class BCPStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BCPStackProps) {
-    super(scope, id);
+    super(scope, id, props);
 
-    const bcpFargateService = new ecs.FargateService(this, 'bcp`-service', {
+    const bcpFargateService = new ecs.FargateService(this, 'bcp-service', {
       assignPublicIp: true,
       desiredCount: 1,
       capacityProviderStrategies: [

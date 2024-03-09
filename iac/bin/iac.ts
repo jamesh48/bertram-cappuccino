@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
+
+import * as dotenv from 'dotenv';
+dotenv.config({ path: './.env' });
+//
 import * as cdk from 'aws-cdk-lib';
 import { BCPStack } from '../lib/bcp-stack';
 
@@ -24,7 +28,11 @@ if (!AWS_VPC_ID) {
   throw new Error('AWS_VPC_ID env is not defined!');
 }
 
-new BCPStack(app, 'bcp-stack', {
+new BCPStack(app, 'BcpStack', {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION,
+  },
   aws_env: {
     AWS_ALB_LISTENER_ARN,
     AWS_CLUSTER_ARN,
@@ -32,8 +40,4 @@ new BCPStack(app, 'bcp-stack', {
     AWS_VPC_ID,
   },
   svc_env: {},
-  env: {
-    region: process.env.CDK_DEFAULT_REGION,
-    account: process.env.CDK_DEFAULT_ACCOUNT,
-  },
 });
