@@ -21,8 +21,8 @@ export class BCPStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BCPStackProps) {
     super(scope, id, props);
 
-    new dynamodb.Table(this, 'betram-cappuccino-members-table', {
-      tableName: 'betram_cappuccino_members_table',
+    new dynamodb.Table(this, 'bertram-cappuccino-members-table', {
+      tableName: 'bertram_cappuccino_members_table',
       partitionKey: {
         name: 'coffeeDrinkerName',
         type: dynamodb.AttributeType.STRING,
