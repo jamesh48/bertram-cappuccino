@@ -13,7 +13,7 @@ There are four environment variables needed for deployment, which is proprietary
 `AWS_DEFAULT_SG`
 `AWS_VPC_ID`
 
-- I also setup a deployment CI/CD Pipeline using Github Actions, it completes automated unit testing before deploying any updates to the AWS Service.
+- I also setup a deployment CI/CD Pipeline using Github Actions, it completes automated unit testing using jest before deploying any updates to the AWS Service.
 
 ## Running the Program Locally
 

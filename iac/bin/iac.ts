@@ -44,8 +44,8 @@ if (!CDK_DEFAULT_REGION) {
 
 new BCPStack(app, 'BcpStack', {
   env: {
-    account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: process.env.CDK_DEFAULT_REGION,
+    account: CDK_DEFAULT_ACCOUNT,
+    region: CDK_DEFAULT_REGION,
   },
   aws_env: {
     AWS_ALB_LISTENER_ARN,
