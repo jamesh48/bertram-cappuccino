@@ -2,9 +2,9 @@
 
 ## Tech Stack
 
-- The frontend and server-side of this project is facilitated by [Next.js](https://nextjs.org/), which is a react framework that simplifies and abstracts complex operations like server side rendering, build optimization, and app routing. The project is written 100% in [Typescript](https://www.typescriptlang.org/). There are no environment variables associated with the service.
+The frontend and server-side of this project is facilitated by [Next.js](https://nextjs.org/), which is a react framework that simplifies and abstracts complex operations like server side rendering, build optimization, and app routing. The project is written 100% in [Typescript](https://www.typescriptlang.org/). There are no environment variables associated with the service.
 
-- This project uses the [AWS Cloud](https://aws.amazon.com/) for hosting and infrastructure. [bertramcappuccino.com](bertramcappuccino.com) is registered as a domain with AWS Route53, and this domain is setup to point to an application load balancer (ALB) that in turn forwards traffic to an ECS Service and Container where the production server is running and frontend code is hosted as an static asset. This project uses [DynamoDB](https://aws.amazon.com/dynamodb) as a database where information like the `coffeeDrinkerName`, `favoriteDrink`, `favoriteDrinkPrice`, `totalExpense`, and `lastBought` data points are stored. The Infrastructure as Code (IAC) [CDK](https://aws.amazon.com/cdk/) templates can found in the iac folder in the root of this project.
+This project uses the [AWS Cloud](https://aws.amazon.com/) for hosting and infrastructure. [bertramcappuccino.com](bertramcappuccino.com) is registered as a domain with AWS Route53, and this domain is setup to point to an application load balancer (ALB) that in turn forwards traffic to an ECS Service and Container where the production server is running and frontend code is hosted as an static asset. This project uses [DynamoDB](https://aws.amazon.com/dynamodb) as a database where information like the `coffeeDrinkerName`, `favoriteDrink`, `favoriteDrinkPrice`, `totalExpense`, and `lastBought` data points are stored. The Infrastructure as Code (IAC) [CDK](https://aws.amazon.com/cdk/) templates can found in the iac folder in the root of this project.
 
 There are four environment variables needed for deployment, which is proprietary to my personal AWS Cloud setup:
 
@@ -13,7 +13,7 @@ There are four environment variables needed for deployment, which is proprietary
 - `AWS_DEFAULT_SG`
 - `AWS_VPC_ID`
 
-- I also setup a deployment [CI/CD Pipeline](https://www.synopsys.com/glossary/what-is-cicd.html) using [Github Actions](https://github.com/features/actions), it completes automated unit testing using [jest](https://jestjs.io/) before deploying any updates to the AWS Service.
+I also setup a deployment [CI/CD Pipeline](https://www.synopsys.com/glossary/what-is-cicd.html) using [Github Actions](https://github.com/features/actions), it completes automated unit testing using [jest](https://jestjs.io/) before deploying any updates to the AWS Service.
 
 ## Running the Program Locally
 
