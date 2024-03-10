@@ -45,6 +45,8 @@ The way of choosing the current days coffee drink buyer is done by two consecuti
 
 2. Secondly, if the algorithm finds NO workers responsible to pay for todays coffee based on not having paid recently, it will pick from todays coffee drinkers the one with the lowest total expense to pay. For example, if the same 3 coffee drinkers have gone out three days in a row for coffee and each has paid respectively, if on the fourth day the same three go out together again, then no worker is responsible for paying based on not having paid recently, and the program will pick from the 3 the one with the lowest total expense to pay for todays coffee.
 
+- Also I made it so that when a new coffee drinker is saved in the database that their lastBought date is saved as today, that way they can receive some hospitality and generally not have to buy a coffee for everyone else on their first outing if there are other coffee buyers who have not bought recently.
+
 ## Given More Time...
 
 1. I would want to create a separate database table to host the prices and names of the various coffee drinks, and use that as static data both when creating a new user (think drop down menus instead of typed inputs), and when calculating the total expense (ET=4-6 hours).
