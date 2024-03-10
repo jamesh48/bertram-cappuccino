@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useState } from 'react';
 import {
   Box,
   FormControl,
@@ -9,11 +10,14 @@ import {
   Button,
   CircularProgress,
   Typography,
+  Collapse,
+  InputLabel,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { Close, Coffee } from '@mui/icons-material';
 import NewCoffeeDrinkerDialog from './NewCoffeeDrinkerDialog';
 import TodaysResultDialog from './TodaysResultDialog';
 import { useQuery } from '@tanstack/react-query';
+import DeleteUserDialog from './DeleteUserDialog';
 
 const getCoffeeDrinkers = async () => {
   const r = await fetch('/api/fetchCoffeeDrinkers', {
@@ -33,6 +37,10 @@ interface CheckedCoffeeDrinker extends CoffeeDrinker {
 }
 
 export default function Home() {
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [optionsPanelOpen, setOptionsPanelOpen] = useState(false);
+  const [deleteUserOpen, setDeleteUserOpen] = useState(false);
+  const [coffeeDrinkerToDelete, setCoffeeDrinkerToDelete] = useState('');
   const [newCoffeeDrinkerOpen, setNewCoffeeDrinkerOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [todaysResult, setTodaysResult] = useState<{
@@ -46,6 +54,12 @@ export default function Home() {
       queryFn: getCoffeeDrinkers,
     }
   );
+
+  useEffect(() => {
+    if (!optionsPanelOpen) {
+      setDeleteMode(false);
+    }
+  }, [optionsPanelOpen]);
 
   useEffect(() => {
     if (data && data.length) {
@@ -64,6 +78,10 @@ export default function Home() {
 
   const handleNewCoffeeDrinkerOpen = (flag: boolean) => {
     setNewCoffeeDrinkerOpen(flag);
+  };
+
+  const handleDeleteUserDialogOpen = (flag: boolean) => {
+    setDeleteUserOpen(flag);
   };
 
   const handleTodaysResultDialogOpen = () => {
@@ -117,6 +135,15 @@ export default function Home() {
     });
   };
 
+  const confirmUserDeletion = (coffeeDrinkerName: string) => {
+    setCoffeeDrinkerToDelete(coffeeDrinkerName);
+    setDeleteUserOpen(true);
+  };
+
+  const handleOptionsPanelOpen = () => {
+    setOptionsPanelOpen((prev) => !prev);
+  };
+
   return (
     <Box
       sx={{
@@ -124,7 +151,7 @@ export default function Home() {
         flexDirection: 'column',
         border: '1px solid black',
         padding: '1rem',
-        width: '20rem',
+        width: '22.5rem',
         borderRadius: '1.5%',
       }}
     >
@@ -176,8 +203,9 @@ export default function Home() {
                     height: 'auto',
                     borderBottom: '1px solid black',
                     display: 'flex',
-                    flexDirection: 'column',
+                    flexDirection: 'row',
                     width: '100%',
+                    alignItems: 'center',
                   }}
                 >
                   <FormControlLabel
@@ -190,23 +218,97 @@ export default function Home() {
                     }
                     label={`${checkbox.coffeeDrinkerName} | ${checkbox.favoriteDrink} | $${checkbox.favoriteDrinkPrice}`}
                   />
+                  {deleteMode ? (
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flex: 1,
+                        justifyContent: 'flex-end',
+                      }}
+                    >
+                      <Close
+                        sx={{
+                          color: 'red',
+                          opacity: 0.5,
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => {
+                          confirmUserDeletion(checkbox.coffeeDrinkerName);
+                        }}
+                      />
+                    </Box>
+                  ) : null}
                 </Box>
               );
             })
           )}
         </FormGroup>
       </FormControl>
-      <Button
-        onClick={() => {
-          handleNewCoffeeDrinkerOpen(true);
+
+      <Box
+        sx={{
+          display: 'flex',
+          cursor: 'pointer',
+          justifyContent: 'center',
+          marginY: '1rem',
+          border: '1px solid black',
+          borderRadius: '.25rem',
+          '&:hover': {
+            borderColor: 'purple',
+          },
         }}
-        variant="outlined"
-        color="secondary"
-        disabled={isFetching || isRefetching}
-        sx={{ marginY: '1rem' }}
+        onClick={handleOptionsPanelOpen}
       >
-        New Coffee Drinker
-      </Button>
+        <Coffee color="secondary" />
+        <InputLabel
+          sx={{
+            cursor: 'pointer',
+            marginX: '.25rem',
+            color: 'black',
+            '&:hover': {
+              color: 'purple',
+            },
+          }}
+        >
+          Options
+        </InputLabel>
+        <Coffee color="secondary" />
+      </Box>
+      <Collapse in={optionsPanelOpen}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Button
+            onClick={() => {
+              handleNewCoffeeDrinkerOpen(true);
+            }}
+            variant="outlined"
+            color="secondary"
+            disabled={isFetching || isRefetching}
+            sx={{ marginY: '.5rem' }}
+          >
+            New Coffee Drinker
+          </Button>
+
+          <Button
+            onClick={() => {
+              setDeleteMode((prev) => !prev);
+            }}
+            variant="outlined"
+            color="error"
+            disabled={isFetching || isRefetching}
+            sx={{ marginY: '.5rem' }}
+          >
+            {deleteMode ? 'Finished Deleting' : 'Delete Coffee Drinkers?'}
+          </Button>
+        </Box>
+      </Collapse>
+
       <NewCoffeeDrinkerDialog
         newCoffeeDrinkerOpen={newCoffeeDrinkerOpen}
         handleNewCoffeeDrinkerOpen={handleNewCoffeeDrinkerOpen}
@@ -215,6 +317,12 @@ export default function Home() {
       <TodaysResultDialog
         handleTodaysResultDialogOpen={handleTodaysResultDialogOpen}
         todaysResult={todaysResult}
+      />
+      <DeleteUserDialog
+        open={deleteUserOpen}
+        coffeeDrinkerName={coffeeDrinkerToDelete}
+        handleDeleteUserDialogOpen={handleDeleteUserDialogOpen}
+        refetch={refetch}
       />
       <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         {isSubmitting ? (
