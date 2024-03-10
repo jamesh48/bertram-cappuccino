@@ -6,6 +6,13 @@
 
 - This project uses the AWS Cloud for hosting and infrastructure. bertramcappuccino.com is registered as a domain with AWS Route53, and this domain is setup to point to an application load balancer (ALB) that in turn forwards traffic to an ECS Service and Container where the production server is running and frontend code is hosted as an static asset. This project uses DynamoDB as a database where information like the coffeeDrinker's names, favorite drink and price, totalExpense, and lastBought date data is stored. The Infrastructure as Code (IAC) CDK templates can found in the iac folder in the root of this project.
 
+There are four environment variables needed for deployment, which is proprietary to my personal AWS Cloud setup:
+
+`AWS_ALB_LISTENER_ARN`
+`AWS_CLUSTER_ARN`
+`AWS_DEFAULT_SG`
+`AWS_VPC_ID`
+
 - I also setup a deployment CI/CD Pipeline using Github Actions, it completes automated unit testing before deploying any updates to the AWS Service.
 
 ## Running the Program Locally
@@ -45,5 +52,3 @@ The way of choosing the current days coffee drink buyer is done by two consecuti
 2. I would also want to create a separate database table to host the prices and names of the various coffee drinks, and use that as static data both when creating a new user (think drop down menus instead of typed inputs), and when calculating the total expense (4 hours).
 
 3. Currently when a user clicks submit, the program and algorithm not only select a buyer for today, but it also increments that buyers total expense and changes their lastBought date to today before returning a result. As in real life, as humans are imperfect for a number of reasons the final improvement is that I would want to extend the logic with selecting a buyer such that before incrementing that persons totalExpense and changing the lastBought date to today, that the program would confirm with the user that the person it selected will indeed be the todays coffee buyer. This would be as simple as having a second POST api endpoint at /api/confirmTodaysBuyer that takes the result it generated at /api/calculateTodaysBuyer and updates that buyers information accordingly (ET=2-4 hours).
-
-4. On the infrastructure and deployment side, if this were a project that I would want to continue iterating on I would make a CICD workflow using github actions. I have templates from other projects for this and this would be easy to implement (ET=30 minutes).

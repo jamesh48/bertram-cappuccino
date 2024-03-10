@@ -77,7 +77,7 @@ export default function Home() {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCheckboxes((prev) => {
       const index = prev.findIndex(
-        (x) => x.coffeeDrinkerName === event.target.name
+        (coffeeDrinker) => coffeeDrinker.coffeeDrinkerName === event.target.name
       );
       const checked = !prev[index].checked;
       const favoriteDrink = prev[index].favoriteDrink;
