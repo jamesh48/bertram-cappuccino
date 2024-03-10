@@ -6,6 +6,8 @@
 
 - This project uses the AWS Cloud for hosting and infrastructure. bertramcappuccino.com is registered as a domain with AWS Route53, and this domain is setup to point to an application load balancer (ALB) that in turn forwards traffic to an ECS Service and Container where the production server is running and frontend code is hosted as an static asset. This project uses DynamoDB as a database where information like the coffeeDrinker's names, favorite drink and price, totalExpense, and lastBought date data is stored. The Infrastructure as Code (IAC) CDK templates can found in the iac folder in the root of this project.
 
+- I also setup a deployment CI/CD Pipeline using Github Actions, it completes automated unit testing before deploying any updates to the AWS Service.
+
 ## Running the Program Locally
 
 It is possible to run the program locally, however it won't work on someone elses local computer unless they either have my AWS account credentials stored locally (I won't give them), or if they have their own AWS Account configured and deploy the needed infrastructure, most notably the database first. Since I took the effort to deploy and host the project myself, I'd recommend just validating with the deployed [Bertram Cappuccino](https://bertramcappuccino.com) website directly. In a real world, client-based scenario, I would hope that the client would either already have a Cloud Provider account like AWS with Identity Access Management (IAM), policy in place for allowing multiple users to access their cloud account securely or that I would take the time to set that up for them. But this undertaking would most definitely be outside of the scope of this take home challenge.
