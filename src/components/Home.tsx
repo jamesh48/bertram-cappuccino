@@ -12,12 +12,15 @@ import {
   Typography,
   Collapse,
   InputLabel,
+  Tooltip,
 } from '@mui/material';
-import { Close, Coffee } from '@mui/icons-material';
+import { Close, Coffee, Edit } from '@mui/icons-material';
+import moment from 'moment';
+import { useQuery } from '@tanstack/react-query';
 import NewCoffeeDrinkerDialog from './NewCoffeeDrinkerDialog';
 import TodaysResultDialog from './TodaysResultDialog';
-import { useQuery } from '@tanstack/react-query';
 import DeleteUserDialog from './DeleteUserDialog';
+import EditUserDialog from './EditCoffeeDrinkersDialog';
 
 const getCoffeeDrinkers = async () => {
   const r = await fetch('/api/fetchCoffeeDrinkers', {
@@ -30,6 +33,7 @@ export interface CoffeeDrinker {
   coffeeDrinkerName: string;
   favoriteDrink: string;
   favoriteDrinkPrice: number;
+  lastBought: string;
 }
 
 interface CheckedCoffeeDrinker extends CoffeeDrinker {
@@ -37,10 +41,15 @@ interface CheckedCoffeeDrinker extends CoffeeDrinker {
 }
 
 export default function Home() {
+  const [editMode, setEditMode] = useState(true);
   const [deleteMode, setDeleteMode] = useState(false);
   const [optionsPanelOpen, setOptionsPanelOpen] = useState(false);
   const [deleteUserOpen, setDeleteUserOpen] = useState(false);
+  const [editCoffeeDrinkerOpen, setEditCoffeeDrinkerOpen] = useState(false);
   const [coffeeDrinkerToDelete, setCoffeeDrinkerToDelete] = useState('');
+  const [coffeeDrinkerToEdit, setCoffeeDrinkerToEdit] = useState<CoffeeDrinker>(
+    {} as CoffeeDrinker
+  );
   const [newCoffeeDrinkerOpen, setNewCoffeeDrinkerOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [todaysResult, setTodaysResult] = useState<{
@@ -58,6 +67,7 @@ export default function Home() {
   useEffect(() => {
     if (!optionsPanelOpen) {
       setDeleteMode(false);
+      setEditMode(false);
     }
   }, [optionsPanelOpen]);
 
@@ -69,6 +79,7 @@ export default function Home() {
           coffeeDrinkerName: coffeeDrinker.coffeeDrinkerName,
           favoriteDrink: coffeeDrinker.favoriteDrink,
           favoriteDrinkPrice: coffeeDrinker.favoriteDrinkPrice,
+          lastBought: coffeeDrinker.lastBought,
         }))
       );
     }
@@ -82,6 +93,10 @@ export default function Home() {
 
   const handleDeleteUserDialogOpen = (flag: boolean) => {
     setDeleteUserOpen(flag);
+  };
+
+  const handleEditUserDialogOpen = (flag: boolean) => {
+    setEditCoffeeDrinkerOpen(flag);
   };
 
   const handleTodaysResultDialogOpen = () => {
@@ -100,11 +115,14 @@ export default function Home() {
       const checked = !prev[index].checked;
       const favoriteDrink = prev[index].favoriteDrink;
       const favoriteDrinkPrice = prev[index].favoriteDrinkPrice;
+      const lastBought = prev[index].lastBought;
+
       prev.splice(index, 1, {
         coffeeDrinkerName: event.target.name,
         checked,
         favoriteDrink,
         favoriteDrinkPrice,
+        lastBought,
       });
       return [...prev];
     });
@@ -138,6 +156,11 @@ export default function Home() {
   const confirmUserDeletion = (coffeeDrinkerName: string) => {
     setCoffeeDrinkerToDelete(coffeeDrinkerName);
     setDeleteUserOpen(true);
+  };
+
+  const confirmUserEdit = (coffeeDrinker: CoffeeDrinker) => {
+    setCoffeeDrinkerToEdit(coffeeDrinker);
+    setEditCoffeeDrinkerOpen(true);
   };
 
   const handleOptionsPanelOpen = () => {
@@ -196,49 +219,85 @@ export default function Home() {
             </Box>
           ) : (
             checkboxes.map((checkbox, index) => {
+              const today = moment();
+              const vacationUntil = moment(checkbox.lastBought);
+              const onVacation = vacationUntil.isAfter(today, 'day');
+              const formatted = vacationUntil.format('L');
+
               return (
-                <Box
+                <Tooltip
                   key={index}
-                  sx={{
-                    height: 'auto',
-                    borderBottom: '1px solid black',
-                    display: 'flex',
-                    flexDirection: 'row',
-                    width: '100%',
-                    alignItems: 'center',
-                  }}
-                >
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={checkbox.checked}
-                        onChange={handleChange}
-                        name={checkbox.coffeeDrinkerName}
-                      />
+                  title={(() => {
+                    if (onVacation) {
+                      return `${checkbox.coffeeDrinkerName} is away until ${formatted}`;
                     }
-                    label={`${checkbox.coffeeDrinkerName} | ${checkbox.favoriteDrink} | $${checkbox.favoriteDrinkPrice}`}
-                  />
-                  {deleteMode ? (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flex: 1,
-                        justifyContent: 'flex-end',
-                      }}
-                    >
-                      <Close
+                    return '';
+                  })()}
+                  placement="left"
+                >
+                  <Box
+                    sx={{
+                      height: 'auto',
+                      borderBottom: '1px solid black',
+                      display: 'flex',
+                      flexDirection: 'row',
+                      width: '100%',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <FormControlLabel
+                      disabled={onVacation}
+                      control={
+                        <Checkbox
+                          checked={checkbox.checked}
+                          onChange={handleChange}
+                          name={checkbox.coffeeDrinkerName}
+                        />
+                      }
+                      label={`${checkbox.coffeeDrinkerName} | ${checkbox.favoriteDrink} | $${checkbox.favoriteDrinkPrice}`}
+                    />
+                    {deleteMode ? (
+                      <Box
                         sx={{
-                          color: 'red',
-                          opacity: 0.5,
-                          cursor: 'pointer',
+                          display: 'flex',
+                          flex: 1,
+                          justifyContent: 'flex-end',
                         }}
-                        onClick={() => {
-                          confirmUserDeletion(checkbox.coffeeDrinkerName);
+                      >
+                        <Close
+                          sx={{
+                            color: 'red',
+                            opacity: 0.5,
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => {
+                            confirmUserDeletion(checkbox.coffeeDrinkerName);
+                          }}
+                        />
+                      </Box>
+                    ) : null}
+                    {editMode ? (
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flex: 1,
+                          justifyContent: 'flex-end',
                         }}
-                      />
-                    </Box>
-                  ) : null}
-                </Box>
+                      >
+                        <Edit
+                          sx={{
+                            color: 'blue',
+                            opacity: 0.5,
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => {
+                            confirmUserEdit(checkbox);
+                          }}
+                        />
+                      </Box>
+                    ) : null}
+                  </Box>
+                </Tooltip>
               );
             })
           )}
@@ -294,7 +353,17 @@ export default function Home() {
           >
             New Coffee Drinker
           </Button>
-
+          <Button
+            onClick={() => {
+              setEditMode((prev) => !prev);
+            }}
+            variant="outlined"
+            color="primary"
+            disabled={isFetching || isRefetching}
+            sx={{ marginY: '.5rem' }}
+          >
+            {editMode ? 'Finished Editing' : 'Edit Coffee Drinkers?'}
+          </Button>
           <Button
             onClick={() => {
               setDeleteMode((prev) => !prev);
@@ -323,6 +392,13 @@ export default function Home() {
         coffeeDrinkerName={coffeeDrinkerToDelete}
         handleDeleteUserDialogOpen={handleDeleteUserDialogOpen}
         refetch={refetch}
+      />
+
+      <EditUserDialog
+        open={editCoffeeDrinkerOpen}
+        refetch={refetch}
+        coffeeDrinker={coffeeDrinkerToEdit}
+        handleEditUserDialogOpen={handleEditUserDialogOpen}
       />
       <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
         {isSubmitting ? (

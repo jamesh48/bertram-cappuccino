@@ -2,16 +2,18 @@ import {
   Box,
   Dialog,
   Typography,
-  OutlinedInput,
   CircularProgress,
   Button,
   Paper,
   PaperProps,
   DialogTitle,
+  TextField,
 } from '@mui/material';
+
 import { Close } from '@mui/icons-material';
 import { Formik, Form } from 'formik';
 import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query';
+import moment from 'moment';
 import { CoffeeDrinker } from './Home';
 import Draggable from 'react-draggable';
 
@@ -21,6 +23,8 @@ interface NewCoffeeDrinkerDialogProps {
   refetch: (
     options?: RefetchOptions | undefined
   ) => Promise<QueryObserverResult<CoffeeDrinker[], Error>>;
+  editMode?: true;
+  editingDefaultValues?: CoffeeDrinker;
 }
 
 function PaperComponent(props: PaperProps) {
@@ -36,13 +40,26 @@ function PaperComponent(props: PaperProps) {
 
 const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
   const handleSubmit = async (values: {}) => {
-    await fetch('/api/newCoffeeDrinker', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(values),
-    });
+    if (props.editMode) {
+      await fetch(
+        `/api/editCoffeeDrinker?coffeeDrinkerName=${props.editingDefaultValues?.coffeeDrinkerName}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(values),
+        }
+      );
+    } else {
+      await fetch('/api/newCoffeeDrinker', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+    }
     // Invalidate Cache
     await props.refetch();
 
@@ -88,20 +105,35 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
             style={{ cursor: 'move', padding: 0 }}
             id="draggable-dialog-title"
           >
-            New Coffee Drinker
+            {props.editMode
+              ? 'Editing ' + props.editingDefaultValues?.coffeeDrinkerName
+              : 'New Coffee Drinker'}
           </DialogTitle>
           <Formik
             onSubmit={handleSubmit}
             initialValues={{
-              coffeeDrinkerName: '',
-              favoriteDrink: '',
-              favoriteDrinkPrice: 0,
+              coffeeDrinkerName:
+                props.editingDefaultValues?.coffeeDrinkerName || '',
+              favoriteDrink: props.editingDefaultValues?.favoriteDrink || '',
+              favoriteDrinkPrice:
+                props.editingDefaultValues?.favoriteDrinkPrice || 0,
+              onVacationUntil: (() => {
+                const today = moment();
+                const vacationUntil = moment(
+                  props.editingDefaultValues?.lastBought
+                );
+                if (vacationUntil.isAfter(today)) {
+                  return props.editingDefaultValues?.lastBought;
+                }
+                return '';
+              })(),
             }}
             validate={async (values) => {
               const errors = {} as {
                 coffeeDrinkerName: string;
                 favoriteDrink: string;
                 favoriteDrinkPrice: string;
+                onVacationUntil: string;
               };
 
               if (!values.favoriteDrink.length) {
@@ -119,6 +151,14 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
                 errors.favoriteDrinkPrice = 'Invalid Drink Price!';
               } else if (!values.favoriteDrinkPrice) {
                 errors.favoriteDrinkPrice = 'Required';
+              }
+              const today = moment();
+
+              const vacationUntil = moment(values.onVacationUntil);
+              if (values.onVacationUntil && !vacationUntil.isValid()) {
+                errors.onVacationUntil = 'Invalid Date';
+              } else if (vacationUntil.isBefore(today, 'day')) {
+                errors.onVacationUntil = 'Invalid Date';
               }
 
               if (Object.keys(errors).length) {
@@ -143,11 +183,15 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
                     paddingY: '.5rem',
                   }}
                 >
-                  <label>Name</label>
-                  <OutlinedInput
+                  <TextField
                     onChange={handleChange}
                     name="coffeeDrinkerName"
                     value={values.coffeeDrinkerName}
+                    disabled={props.editMode}
+                    label="Coffee Drinker Name"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
                   />
                   {errors.coffeeDrinkerName ? (
                     <Typography sx={{ color: 'red' }}>
@@ -163,11 +207,14 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
                       paddingY: '.5rem',
                     }}
                   >
-                    <label>Favorite Drink</label>
-                    <OutlinedInput
+                    <TextField
                       onChange={handleChange}
                       name="favoriteDrink"
                       value={values.favoriteDrink}
+                      label="Favorite Drink"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
                     />
                     {errors.favoriteDrink ? (
                       <Typography sx={{ color: 'red' }}>
@@ -184,11 +231,14 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
                       paddingY: '.5rem',
                     }}
                   >
-                    <label>Favorite Drink Price</label>
-                    <OutlinedInput
+                    <TextField
                       onChange={handleChange}
                       name="favoriteDrinkPrice"
                       value={values.favoriteDrinkPrice}
+                      label="Favorite Drink Price"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
                     />
                     {errors.favoriteDrinkPrice ? (
                       <Typography sx={{ color: 'red' }}>
@@ -197,7 +247,32 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
                     ) : null}
                   </Box>
                 ) : null}
-
+                {props.editMode ? (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      paddingY: '.5rem',
+                    }}
+                  >
+                    <TextField
+                      id="date"
+                      onChange={handleChange}
+                      name="onVacationUntil"
+                      value={values.onVacationUntil}
+                      label="On Vacation Until"
+                      type="date"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                    />
+                    {errors.onVacationUntil ? (
+                      <Typography sx={{ color: 'red' }}>
+                        {errors.onVacationUntil}
+                      </Typography>
+                    ) : null}
+                  </Box>
+                ) : null}
                 {values.favoriteDrinkPrice && !errors.favoriteDrinkPrice ? (
                   <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                     {isSubmitting ? (
