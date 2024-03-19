@@ -1,10 +1,6 @@
-import {
-  QueryCommand,
-  QueryCommandInput,
-  UpdateItemCommand,
-} from '@aws-sdk/client-dynamodb';
+import { UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
-import { dynamoClient, router } from '../../api-libs';
+import { dynamoClient, router, querySingleUser } from '@/api-libs';
 
 interface CoffeeDrinker {
   coffeeDrinkerName: string;
@@ -15,20 +11,9 @@ interface CoffeeDrinker {
 }
 
 const fetchTodaysCoffeeDrinkers = async (coffeeDrinkerNames: string[]) => {
-  const queries = coffeeDrinkerNames.map((coffeeDrinkerName: string) => {
-    const queryCommandInput: QueryCommandInput = {
-      TableName: 'bertram_cappuccino_members_table',
-      KeyConditionExpression: '#coffeeDrinkerName = :coffeeDrinkerName',
-      ExpressionAttributeNames: {
-        '#coffeeDrinkerName': 'coffeeDrinkerName',
-      },
-      ExpressionAttributeValues: {
-        ':coffeeDrinkerName': { S: coffeeDrinkerName },
-      },
-    };
-    const queryCommand = new QueryCommand(queryCommandInput);
-    return dynamoClient.send(queryCommand);
-  });
+  const queries = coffeeDrinkerNames.map((coffeeDrinkerName: string) =>
+    querySingleUser(coffeeDrinkerName)
+  );
 
   const todaysCoffeeDrinkers = (await Promise.all(queries)).reduce<
     CoffeeDrinker[]

@@ -9,13 +9,14 @@ import {
   DialogTitle,
   TextField,
 } from '@mui/material';
-
+import debounce from 'lodash/debounce';
 import { Close } from '@mui/icons-material';
 import { Formik, Form } from 'formik';
 import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query';
 import moment from 'moment';
 import { CoffeeDrinker } from './Home';
 import Draggable from 'react-draggable';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface NewCoffeeDrinkerDialogProps {
   newCoffeeDrinkerOpen: boolean;
@@ -39,6 +40,23 @@ function PaperComponent(props: PaperProps) {
 }
 
 const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
+  const [validatingCoffeeDrinkerName, setValidatingCoffeeDrinkerName] =
+    useState('');
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedValidateCoffeeDrinker = useCallback(
+    debounce(async (coffeeDrinkerName: string) => {
+      setValidatingCoffeeDrinkerName('Validating...'); // Show loading indicator
+      const response = await fetch(
+        `/api/checkUser?coffeeDrinkerName=${coffeeDrinkerName}`
+      );
+      const result = await response.json();
+
+      setValidatingCoffeeDrinkerName(result.message);
+    }, 500),
+    []
+  );
+
   const handleSubmit = async (values: {}) => {
     if (props.editMode) {
       await fetch(
@@ -66,6 +84,8 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
     // Close Dialog
     props.handleNewCoffeeDrinkerOpen(false);
   };
+
+  const coffeeUserNameRef = useRef(null);
 
   return (
     <Dialog
@@ -136,12 +156,16 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
                 onVacationUntil: string;
               };
 
-              if (!values.favoriteDrink.length) {
-                errors.favoriteDrink = 'Required';
+              if (!values.coffeeDrinkerName.length) {
+                setValidatingCoffeeDrinkerName('Required');
+              }
+              // Don't validate when the coffeeDrinkerName is not being typed on
+              else if (coffeeUserNameRef.current === document.activeElement) {
+                debouncedValidateCoffeeDrinker(values.coffeeDrinkerName);
               }
 
-              if (!values.coffeeDrinkerName.length) {
-                errors.coffeeDrinkerName = 'Required';
+              if (!values.favoriteDrink.length) {
+                errors.favoriteDrink = 'Required';
               }
 
               if (
@@ -189,17 +213,23 @@ const NewCoffeeDrinkerDialog = (props: NewCoffeeDrinkerDialogProps) => {
                     value={values.coffeeDrinkerName}
                     disabled={props.editMode}
                     label="Coffee Drinker Name"
+                    inputRef={coffeeUserNameRef}
                     InputLabelProps={{
                       shrink: true,
                     }}
                   />
-                  {errors.coffeeDrinkerName ? (
-                    <Typography sx={{ color: 'red' }}>
-                      {errors.coffeeDrinkerName}
-                    </Typography>
-                  ) : null}
+                  <Typography
+                    sx={{
+                      color: 'red',
+                    }}
+                  >
+                    {validatingCoffeeDrinkerName !== 'Valid!'
+                      ? validatingCoffeeDrinkerName
+                      : null}
+                  </Typography>
                 </Box>
-                {values.coffeeDrinkerName && !errors.coffeeDrinkerName ? (
+                {values.coffeeDrinkerName &&
+                validatingCoffeeDrinkerName === 'Valid!' ? (
                   <Box
                     sx={{
                       display: 'flex',
