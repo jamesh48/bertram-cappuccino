@@ -1,6 +1,6 @@
 import { UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
-import { dynamoClient, router, querySingleUser } from '@/api-libs';
+import { dynamoClient, router, querySingleUser } from '../../api-libs';
 
 interface CoffeeDrinker {
   coffeeDrinkerName: string;

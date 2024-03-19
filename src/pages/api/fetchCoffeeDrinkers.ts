@@ -1,4 +1,4 @@
-import { dynamoClient, router } from '@/api-libs';
+import { dynamoClient, router } from '../../api-libs';
 import { ScanCommand, ScanCommandInput } from '@aws-sdk/client-dynamodb';
 import { unmarshall } from '@aws-sdk/util-dynamodb';
 

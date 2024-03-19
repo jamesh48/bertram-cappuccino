@@ -1,4 +1,4 @@
-import { router, querySingleUser } from '@/api-libs';
+import { router, querySingleUser } from '../../api-libs';
 
 const fetchCoffeeDrinkers = router
   .clone()
